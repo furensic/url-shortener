@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -11,8 +10,6 @@ import (
 )
 
 func (app *application) createShortenedUri(w http.ResponseWriter, r *http.Request) {
-	log.Print("Received POST / request. Handler function createShortenedUri")
-
 	shortenedUri := database.ShortenedUri{}
 
 	decoder := json.NewDecoder(r.Body)
@@ -31,7 +28,6 @@ func (app *application) createShortenedUri(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *application) getShortenedUriById(w http.ResponseWriter, r *http.Request) {
-	log.Print("Received GET / request. Handler function getShortenedUriById")
 	param_id := r.PathValue("id")
 	id, err := strconv.Atoi(param_id)
 	if err != nil {
