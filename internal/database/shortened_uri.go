@@ -1,6 +1,9 @@
 package database
 
+import "github.com/jackc/pgx/v5"
+
 type ShortenedUriModel struct {
+	DB *pgx.Conn
 }
 
 type ShortenedUri struct {

@@ -1,11 +1,13 @@
 package database
 
+import "github.com/jackc/pgx/v5"
+
 type Models struct {
 	ShortenedUri ShortenedUriModel
 }
 
-func NewModels() Models {
+func NewModels(db *pgx.Conn) Models {
 	return Models{
-		ShortenedUri: ShortenedUriModel{},
+		ShortenedUri: ShortenedUriModel{DB: db},
 	}
 }
