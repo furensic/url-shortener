@@ -9,7 +9,10 @@ func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 
 	log.Print("Mounting handlers")
+
 	mux.HandleFunc("GET /health", app.getHealth)
+
+	mux.HandleFunc("POST /", app.createShortenedUri)
 
 	return mux
 }
