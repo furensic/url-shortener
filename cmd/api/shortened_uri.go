@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -20,11 +21,15 @@ func (app *application) createShortenedUri(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if err := app.models.ShortenedUri.Create(&shortenedUri); err != nil {
+	tmp, err := app.models.ShortenedUri.Create(&shortenedUri)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	w.WriteHeader(http.StatusNoContent)
+
+	w.Header().Set("content-type", "application/json")
+	enc := json.NewEncoder(w)
+	enc.Encode(tmp)
 }
 
 func (app *application) getShortenedUriById(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +49,6 @@ func (app *application) getShortenedUriById(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	w.Header().Set("content-type", "application/json")
-	enc := json.NewEncoder(w)
-	enc.Encode(shortenedUri)
+	log.Print("Redirecting request to:", shortenedUri.OriginUri)
+	http.Redirect(w, r, shortenedUri.OriginUri, http.StatusPermanentRedirect)
 }

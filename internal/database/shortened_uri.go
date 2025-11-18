@@ -16,17 +16,20 @@ type ShortenedUri struct {
 	OriginUri string `json:"origin_uri"`
 }
 
-func (m *ShortenedUriModel) Create(s *ShortenedUri) error {
+func (m *ShortenedUriModel) Create(s *ShortenedUri) (ShortenedUri, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	query := "INSERT INTO shortened_uri (origin_uri) VALUES ($1) RETURNING id"
 	var id int
 	if err := m.DB.QueryRow(ctx, query, s.OriginUri).Scan(&id); err != nil {
-		return err
+		return ShortenedUri{}, err
 	}
 
-	return nil
+	return ShortenedUri{
+		Id:        id,
+		OriginUri: s.OriginUri,
+	}, nil
 }
 
 func (m *ShortenedUriModel) GetById(id int) (ShortenedUri, error) {
