@@ -14,7 +14,7 @@ jobs:
         run: go version
       - name: Install dependencies
         run: |
-          get get github.com/jackc/pgx/v5
+          go get github.com/jackc/pgx/v5
       - name: Test go code
         run: go test ./cmd/api
       - name: Build the package
