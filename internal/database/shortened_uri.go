@@ -28,3 +28,16 @@ func (m *ShortenedUriModel) Create(s *ShortenedUri) error {
 
 	return nil
 }
+
+func (m *ShortenedUriModel) GetById(id int) (ShortenedUri, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := "SELECT * FROM shortened_uri WHERE id=$1"
+	var shortenedUri ShortenedUri
+	if err := m.DB.QueryRow(ctx, query, id).Scan(&shortenedUri.Id, &shortenedUri.OriginUri); err != nil {
+		return ShortenedUri{}, err
+	}
+
+	return shortenedUri, nil
+}
