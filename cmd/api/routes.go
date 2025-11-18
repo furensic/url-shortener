@@ -13,6 +13,7 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("GET /health", app.getHealth)
 
 	mux.HandleFunc("POST /", app.createShortenedUri)
+	mux.HandleFunc("GET /{id}", app.getShortenedUriById)
 
 	return mux
 }
