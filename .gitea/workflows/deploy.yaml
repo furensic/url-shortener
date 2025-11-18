@@ -1,0 +1,13 @@
+name: Build application
+run-name: Build application on ${{ gitea.event_name }} event.
+on: [push]
+
+jobs:
+  Explore-Gitea-Actions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '>=1.24.0'
+      - run: go version
