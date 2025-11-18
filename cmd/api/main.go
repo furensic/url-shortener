@@ -2,17 +2,21 @@ package main
 
 import (
 	"log"
+
+	"codeberg.org/Kassiopeia/url-shortener/internal/database"
 )
 
 type application struct {
-	port int
+	port   int
+	models database.Models
 }
 
 func main() {
 	log.Print("Starting url shortener service")
 
 	app := &application{
-		port: 8080,
+		port:   8080,
+		models: database.NewModels(),
 	}
 
 	if err := app.serv(); err != nil {

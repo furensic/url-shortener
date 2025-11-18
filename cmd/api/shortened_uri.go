@@ -1,7 +1,15 @@
 package main
 
-import "net/http"
+import (
+	"log"
+	"net/http"
+
+	"codeberg.org/Kassiopeia/url-shortener/internal/database"
+)
 
 func (app *application) createShortenedUri(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Not implemented\n"))
+	log.Print("Received GET / request. Handler function createShortenedUri")
+	if err := app.models.ShortenedUri.Create(&database.ShortenedUri{}); err != nil {
+		log.Fatal("Error creating shortenedUri: ", err.Error())
+	}
 }
