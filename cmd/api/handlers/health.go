@@ -12,7 +12,7 @@ import (
 )
 
 type Handler struct {
-	UriService service.ShortenedUriService
+	UriService service.ShortenerService
 }
 
 type CreateShortenedUriRequest struct {
@@ -38,7 +38,7 @@ func (h *Handler) createShortenedUri(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmp, err := h.UriService.Create(&shortenedUri)
+	tmp, err := h.UriService.Create(shortenedUri)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

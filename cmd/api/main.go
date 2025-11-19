@@ -12,8 +12,9 @@ import (
 )
 
 type application struct {
-	config config
-	models Models
+	config  config
+	models  Models
+	service *service.ShortenerService
 }
 
 type Models struct {
@@ -27,13 +28,7 @@ func NewModels(db *pgx.Conn) Models {
 }
 
 type Services struct {
-	ShortenedUri service.ShortenedUriService
-}
-
-func NewServices(m Models) Services {
-	return Services{
-		ShortenedUri: service.,
-	}
+	ShortenedUri service.ShortenerService
 }
 
 func NewPostgresDatabase(s string) (*pgx.Conn, error) {
@@ -63,7 +58,9 @@ func main() {
 
 	models := NewModels(db)
 
-	services := 
+	storage := repository.NewShortenedUriRepo(db)
+
+	services := service.NewShortenerService(storage)
 
 	app_config := config{
 		port:              8090,

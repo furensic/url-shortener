@@ -18,7 +18,7 @@ func NewShortenedUriRepo(db *pgx.Conn) *ShortenedUriRepo {
 	return &ShortenedUriRepo{Db: db}
 }
 
-func (m *ShortenedUriRepo) Create(s *models.ShortenedUri) (models.ShortenedUri, error) {
+func (m *ShortenedUriRepo) Create(s models.ShortenedUri) (models.ShortenedUri, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
