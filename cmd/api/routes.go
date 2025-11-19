@@ -3,17 +3,23 @@ package main
 import (
 	"log"
 	"net/http"
+
+	"codeberg.org/Kassiopeia/url-shortener/cmd/api/handlers"
 )
 
-func (app *application) routes() http.Handler {
-	mux := http.NewServeMux()
-
+func (app *application) mountRoutes(h *handlers.Handler) http.Handler {
 	log.Print("Mounting handlers")
 
-	mux.HandleFunc("GET /health", app.getHealth)
+	publicMux := http.NewServeMux()
+	// health
+	publicMux.HandleFunc("GET /health", h.GetHealthHandler) // ?
+	// shortened_uri
+	publicMux.HandleFunc("POST /", h.CreateShortenedUri)     // ?
+	publicMux.HandleFunc("GET /{id}", h.GetShortenedUriById) // ?
 
-	mux.HandleFunc("POST /", app.createShortenedUri)
-	mux.HandleFunc("GET /{id}", app.getShortenedUriById)
+	// root router
+	rootMux := http.NewServeMux()
+	rootMux.Handle("/v1/", http.StripPrefix("/v1", logMiddleware(publicMux)))
 
-	return mux
+	return rootMux
 }

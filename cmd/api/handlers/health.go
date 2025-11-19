@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -6,12 +6,24 @@ import (
 	"net/http"
 	"strconv"
 
-	"codeberg.org/Kassiopeia/url-shortener/internal/database"
+	"codeberg.org/Kassiopeia/url-shortener/internal/models"
+	"codeberg.org/Kassiopeia/url-shortener/internal/service"
 	"github.com/jackc/pgx/v5"
 )
 
-func (app *application) createShortenedUri(w http.ResponseWriter, r *http.Request) {
-	shortenedUri := database.ShortenedUri{}
+type CreateShortenedUriRequest struct {
+	OriginUri string `json:"origin_uri"`
+}
+type Handler struct {
+	ShortenerService *service.ShortenerService
+}
+
+func (h *Handler) GetHealthHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Application running!\n"))
+}
+
+func (h *Handler) CreateShortenedUri(w http.ResponseWriter, r *http.Request) {
+	shortenedUri := models.ShortenedUri{}
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
@@ -21,7 +33,7 @@ func (app *application) createShortenedUri(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	tmp, err := app.models.ShortenedUri.Create(&shortenedUri)
+	tmp, err := h.ShortenerService.Create(shortenedUri)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -32,14 +44,17 @@ func (app *application) createShortenedUri(w http.ResponseWriter, r *http.Reques
 	enc.Encode(tmp)
 }
 
-func (app *application) getShortenedUriById(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetShortenedUriById(w http.ResponseWriter, r *http.Request) {
 	param_id := r.PathValue("id")
 	id, err := strconv.Atoi(param_id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	shortenedUri, err := app.models.ShortenedUri.GetById(id)
+
+	log.Print("before h.ShortenerService.GetById(id)")
+
+	shortenedUri, err := h.ShortenerService.GetById(id)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			http.Error(w, err.Error(), http.StatusNotFound)
