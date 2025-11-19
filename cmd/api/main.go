@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"codeberg.org/Kassiopeia/url-shortener/cmd/api/handlers"
 	"codeberg.org/Kassiopeia/url-shortener/internal/repository"
 	"codeberg.org/Kassiopeia/url-shortener/internal/service"
 	"github.com/jackc/pgx/v5"
@@ -56,11 +57,11 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	models := NewModels(db)
+	shortenedUriRepo := repository.ShortenedUriPostgres{
+		Db: db,
+	}
 
-	storage := repository.NewShortenedUriRepo(db)
-
-	services := service.NewShortenerService(storage)
+	shortenerService := service.NewShortenerService(&shortenedUriRepo) // ?
 
 	app_config := config{
 		port:              8090,
@@ -71,11 +72,16 @@ func main() {
 	}
 
 	app := &application{
-		config: app_config,
-		models: NewModels(db),
+		config:  app_config,
+		models:  NewModels(db),
+		service: shortenerService,
 	}
 
-	if err := app.serveHTTP(); err != nil {
+	handler := &handlers.Handler{
+		ShortenerService: shortenerService,
+	}
+
+	if err := app.serveHTTP(handler); err != nil {
 		log.Fatal("Error listening and serving:", err.Error())
 	}
 }

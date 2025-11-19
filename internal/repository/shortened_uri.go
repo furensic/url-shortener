@@ -8,17 +8,17 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type ShortenedUriRepo struct {
+type ShortenedUriPostgres struct {
 	Db *pgx.Conn
 }
 
-var _ ShortenedUriRepository = (*ShortenedUriRepo)(nil)
+var _ ShortenedUriRepository = (*ShortenedUriPostgres)(nil)
 
-func NewShortenedUriRepo(db *pgx.Conn) *ShortenedUriRepo {
-	return &ShortenedUriRepo{Db: db}
+func NewShortenedUriRepo(db *pgx.Conn) *ShortenedUriPostgres {
+	return &ShortenedUriPostgres{Db: db}
 }
 
-func (m *ShortenedUriRepo) Create(s models.ShortenedUri) (models.ShortenedUri, error) {
+func (m *ShortenedUriPostgres) Create(s models.ShortenedUri) (models.ShortenedUri, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -34,7 +34,7 @@ func (m *ShortenedUriRepo) Create(s models.ShortenedUri) (models.ShortenedUri, e
 	}, nil
 }
 
-func (m *ShortenedUriRepo) GetById(id int) (models.ShortenedUri, error) {
+func (m *ShortenedUriPostgres) GetById(id int) (models.ShortenedUri, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 

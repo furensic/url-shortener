@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -11,23 +11,18 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type Handler struct {
-	UriService service.ShortenerService
-}
-
 type CreateShortenedUriRequest struct {
 	OriginUri string `json:"origin_uri"`
 }
-
-func NewHandler() *Handler {
-	return &Handler{}
+type Handler struct {
+	ShortenerService *service.ShortenerService
 }
 
-func (h *Handler) getHealthHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetHealthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Application running!\n"))
 }
 
-func (h *Handler) createShortenedUri(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateShortenedUri(w http.ResponseWriter, r *http.Request) {
 	shortenedUri := models.ShortenedUri{}
 
 	decoder := json.NewDecoder(r.Body)
@@ -38,7 +33,7 @@ func (h *Handler) createShortenedUri(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmp, err := h.UriService.Create(shortenedUri)
+	tmp, err := h.ShortenerService.Create(shortenedUri)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -49,14 +44,17 @@ func (h *Handler) createShortenedUri(w http.ResponseWriter, r *http.Request) {
 	enc.Encode(tmp)
 }
 
-func (h *Handler) getShortenedUriById(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetShortenedUriById(w http.ResponseWriter, r *http.Request) {
 	param_id := r.PathValue("id")
 	id, err := strconv.Atoi(param_id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	shortenedUri, err := h.UriService.GetById(id)
+
+	log.Print("before h.ShortenerService.GetById(id)")
+
+	shortenedUri, err := h.ShortenerService.GetById(id)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			http.Error(w, err.Error(), http.StatusNotFound)
