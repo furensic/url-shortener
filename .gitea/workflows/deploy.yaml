@@ -56,6 +56,12 @@ jobs:
           }
           EOF
 
+      - name: Add registry CA cert to docker certs.d
+        run: |
+          mkdir -p /etc/docker/certs.d/gitea.lab
+          cat ${{ secrets.REGISTRY_CA_CERT }} > /etc/docker/certs.d/gitea.lab/ca.crt
+          systemctl restart docker
+
       #
       # Login to Gitea Container Registry
       #
