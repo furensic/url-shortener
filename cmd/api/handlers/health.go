@@ -7,8 +7,8 @@ import (
 	"strconv"
 
 	"codeberg.org/Kassiopeia/url-shortener/internal/models"
+	"codeberg.org/Kassiopeia/url-shortener/internal/repository"
 	"codeberg.org/Kassiopeia/url-shortener/internal/service"
-	"github.com/jackc/pgx/v5"
 )
 
 type CreateShortenedUriRequest struct {
@@ -56,7 +56,8 @@ func (h *Handler) GetShortenedUriById(w http.ResponseWriter, r *http.Request) {
 
 	shortenedUri, err := h.ShortenerService.GetById(id)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err == repository.ErrShortenedUriNotFound {
+			log.Print("ErrNoRows GetById")
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}

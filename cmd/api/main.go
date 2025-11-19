@@ -57,11 +57,9 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	shortenedUriRepo := repository.ShortenedUriPostgres{
-		Db: db,
-	}
+	shortenedUriRepo := repository.NewShortenedUriRepo(db)
 
-	shortenerService := service.NewShortenerService(&shortenedUriRepo) // ?
+	shortenerService := service.NewShortenerService(shortenedUriRepo) // ?
 
 	app_config := config{
 		port:              8090,

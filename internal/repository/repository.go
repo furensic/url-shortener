@@ -5,6 +5,6 @@ import (
 )
 
 type ShortenedUriRepository interface {
-	Create(s models.ShortenedUri) (models.ShortenedUri, error)
-	GetById(id int) (models.ShortenedUri, error)
+	Create(s models.ShortenedUri) (*models.ShortenedUri, error)
+	GetById(id int) (*models.ShortenedUri, error)
 }
