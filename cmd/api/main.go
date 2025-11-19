@@ -17,7 +17,7 @@ type application struct {
 func main() {
 	log.Print("Starting url shortener service")
 
-	db, err := pgx.Connect(context.Background(), "postgres://svc:password@localhost:5432/url_shortener")
+	db, err := pgx.Connect(context.Background(), "postgres://svc:password@postgres:5432/url_shortener")
 	if err != nil {
 		log.Fatal("Error opening database connection: ", err.Error())
 	}
