@@ -1,5 +1,7 @@
 # url-shortener
 
-A simple application that offers URI redirection.
+![GitHub language count](https://img.shields.io/github/languages/count/furensic/url-shortener?style=plastic)
+![GitHub go.mod Go version (branch)](https://img.shields.io/github/go-mod/go-version/furensic/url-shortener/main?style=plastic)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/w/furensic/url-shortener?style=plastic)
 
-![test](http://10.10.0.50:3333/leo/url-shortener/actions/workflows/demo/badge.svg?branch=main)
+A simple server application that offers HTTP redirection via an REST API.
