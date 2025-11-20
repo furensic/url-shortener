@@ -8,20 +8,20 @@ import (
 )
 
 type ShortenerService struct {
-	storage repository.ShortenedUriRepository
+	storage repository.Repo
 }
 
-func NewShortenerService(storage repository.ShortenedUriRepository) *ShortenerService {
+func NewShortenerService(storage repository.Repo) *ShortenerService {
 	return &ShortenerService{storage: storage}
 }
 
 func (s *ShortenerService) Create(u models.ShortenedUri) (*models.ShortenedUri, error) {
 	// logic to check uri in request
-	return s.storage.Create(u)
+	return s.storage.ShortenedUriRepository.Create(u)
 }
 
 func (s *ShortenerService) GetById(id int) (*models.ShortenedUri, error) {
 	log.Print("before s.GetById(id)")
 
-	return s.storage.GetById(id)
+	return s.storage.ShortenedUriRepository.GetById(id)
 }

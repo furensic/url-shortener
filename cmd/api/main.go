@@ -14,18 +14,7 @@ import (
 
 type application struct {
 	config  config
-	models  Models
 	service *service.ShortenerService
-}
-
-type Models struct {
-	ShortenedUri repository.ShortenedUriRepository
-}
-
-func NewModels(db *pgx.Conn) Models {
-	return Models{
-		ShortenedUri: repository.NewShortenedUriRepo(db),
-	}
 }
 
 type Services struct {
@@ -57,9 +46,13 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	shortenedUriRepo := repository.NewShortenedUriRepo(db)
+	shortenedUriRepo := repository.NewPostgresAdapter(db)
 
-	shortenerService := service.NewShortenerService(shortenedUriRepo) // ?
+	repositories := repository.Repo{
+		ShortenedUriRepository: shortenedUriRepo,
+	}
+
+	shortenerService := service.NewShortenerService(repositories) // ?
 
 	app_config := config{
 		port:              8090,
@@ -71,7 +64,6 @@ func main() {
 
 	app := &application{
 		config:  app_config,
-		models:  NewModels(db),
 		service: shortenerService,
 	}
 

@@ -8,15 +8,15 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type ShortenedUriPostgresAdapter struct {
+type ShortenedUriMockAdapter struct {
 	db *pgx.Conn
 }
 
-func NewPostgresAdapter(db *pgx.Conn) *ShortenedUriPostgresAdapter {
-	return &ShortenedUriPostgresAdapter{db: db}
+func NewMockAdapter(db *pgx.Conn) *ShortenedUriMockAdapter {
+	return &ShortenedUriMockAdapter{db: db}
 }
 
-func (a *ShortenedUriPostgresAdapter) GetById(id int) (*models.ShortenedUri, error) {
+func (a *ShortenedUriMockAdapter) GetById(id int) (*models.ShortenedUri, error) {
 	uri := models.ShortenedUri{}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -34,7 +34,7 @@ func (a *ShortenedUriPostgresAdapter) GetById(id int) (*models.ShortenedUri, err
 	return &uri, nil
 }
 
-func (a *ShortenedUriPostgresAdapter) Create(u models.ShortenedUri) (*models.ShortenedUri, error) {
+func (a *ShortenedUriMockAdapter) Create(u models.ShortenedUri) (*models.ShortenedUri, error) {
 	uri := models.ShortenedUri{}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
