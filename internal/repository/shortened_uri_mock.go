@@ -12,7 +12,7 @@ type ShortenedUriMockAdapter struct {
 	db *pgx.Conn
 }
 
-func NewMockAdapter(db *pgx.Conn) *ShortenedUriMockAdapter {
+func NewMockAdapter() *ShortenedUriMockAdapter {
 	return &ShortenedUriMockAdapter{db: db}
 }
 

@@ -40,9 +40,9 @@ func (a *ShortenedUriPostgresAdapter) Create(u models.ShortenedUri) (*models.Sho
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := "INSERT INTO shortened_uri (origin_uri) VALUES ($1) returning id, origin_uri"
+	query := "INSERT INTO shortened_uri (origin_uri, timestamp) VALUES ($1, $2) returning id, origin_uri"
 
-	if err := a.db.QueryRow(ctx, query, &u.OriginUri).Scan(&uri.Id, &uri.OriginUri); err != nil {
+	if err := a.db.QueryRow(ctx, query, &u.OriginUri, u.Timestamp.Unix()).Scan(&uri.Id, &uri.OriginUri); err != nil {
 		return nil, err
 	}
 

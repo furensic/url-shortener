@@ -2,6 +2,7 @@ package service
 
 import (
 	"log"
+	"time"
 
 	"codeberg.org/Kassiopeia/url-shortener/internal/models"
 	"codeberg.org/Kassiopeia/url-shortener/internal/repository"
@@ -16,6 +17,8 @@ func NewShortenerService(storage repository.Repo) *ShortenerService {
 }
 
 func (s *ShortenerService) Create(u models.ShortenedUri) (*models.ShortenedUri, error) {
+	// add timestamp to u
+	u.Timestamp = time.Now()
 	// logic to check uri in request
 	return s.storage.ShortenedUriRepository.Create(u)
 }

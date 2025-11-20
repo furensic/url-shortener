@@ -15,6 +15,10 @@ type config struct {
 	readTimeout       time.Duration
 	readHeaderTimeout time.Duration
 	idleTimeout       time.Duration
+
+	tls            bool
+	certificate    string
+	certificateKey string
 }
 
 type Middleware func(next http.Handler) http.Handler
@@ -46,5 +50,10 @@ func (app *application) serveHTTP(h *handlers.Handler) error {
 	app.logger.Debug("Created new http.Server config " + fmt.Sprintf("%+v", &server))
 
 	app.logger.Debug("Starting http server on " + server.Addr)
-	return server.ListenAndServe()
+
+	if app.config.tls && app.config.certificate != "" && app.config.certificateKey != "" {
+		return server.ListenAndServeTLS(app.config.certificate, app.config.certificateKey)
+	} else {
+		return server.ListenAndServe()
+	}
 }
