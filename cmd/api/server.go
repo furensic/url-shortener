@@ -27,13 +27,14 @@ func logMiddleware(next http.Handler) http.Handler {
 
 		elapsedTime := time.Since(startTime)
 		log.Printf("[%s] Path: %s Elapsed: %s\n", r.Method, r.URL.Path, elapsedTime)
+		// not sure how to replace this standard logger with my application logger?
 	})
 }
 
 func (app *application) serveHTTP(h *handlers.Handler) error {
-	log.Print("Creating http server")
-
+	app.logger.Debug("Mounting routes from handler")
 	router := app.mountRoutes(h)
+
 	server := http.Server{
 		Addr:              fmt.Sprintf(":%d", app.config.port),
 		Handler:           router,
@@ -42,8 +43,8 @@ func (app *application) serveHTTP(h *handlers.Handler) error {
 		ReadHeaderTimeout: app.config.readHeaderTimeout,
 		IdleTimeout:       app.config.idleTimeout,
 	}
+	app.logger.Debug("Created new http.Server config " + fmt.Sprintf("%+v", &server))
 
-	log.Print("Starting http server on ", server.Addr)
-
+	app.logger.Debug("Starting http server on " + server.Addr)
 	return server.ListenAndServe()
 }
