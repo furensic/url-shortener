@@ -72,7 +72,7 @@ func (h *Handler) GetShortenedUriById(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
-	newRequest := models.RegisterUserRequest{}
+	newRequest := models.RegisterUserPayload{}
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
