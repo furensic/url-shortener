@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"time"
 
@@ -62,8 +61,6 @@ func (a *UserPostgresAdapter) Verify(p models.LoginUserPayload) (*models.User, e
 	userFound := models.User{}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-
-	slog.Info(fmt.Sprintf("Username: %s, Password: %s", p.Username, p.Username))
 
 	query := "SELECT id, username, password_hash FROM users WHERE username=$1"
 
