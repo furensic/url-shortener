@@ -14,8 +14,10 @@ import (
 type CreateShortenedUriRequest struct {
 	OriginUri string `json:"origin_uri"`
 }
+
 type Handler struct {
 	ShortenerService *service.ShortenerService
+	UserService      *service.UserService
 }
 
 func (h *Handler) GetHealthHandler(w http.ResponseWriter, r *http.Request) {
@@ -67,4 +69,26 @@ func (h *Handler) GetShortenedUriById(w http.ResponseWriter, r *http.Request) {
 
 	log.Print("Redirecting request to:", shortenedUri.OriginUri)
 	http.Redirect(w, r, shortenedUri.OriginUri, http.StatusPermanentRedirect)
+}
+
+func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
+	newRequest := models.RegisterUserRequest{}
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	if err := decoder.Decode(&newRequest); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	user, err := h.UserService.Create(newRequest)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("content-type", "application/json")
+	enc := json.NewEncoder(w)
+	enc.Encode(user)
 }

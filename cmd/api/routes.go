@@ -20,6 +20,8 @@ func (app *application) mountRoutes(h *handlers.Handler) http.Handler {
 	app.logger.Debug("Mounting GET /{id}")
 	publicMux.HandleFunc("GET /{id}", h.GetShortenedUriById) // ?
 
+	publicMux.HandleFunc("POST /auth/register", h.RegisterUser)
+
 	// root router
 	app.logger.Debug("Creating root mux")
 	rootMux := http.NewServeMux()

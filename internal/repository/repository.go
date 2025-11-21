@@ -9,4 +9,7 @@ type Repo struct {
 		Create(s models.ShortenedUri) (*models.ShortenedUri, error)
 		GetById(id int) (*models.ShortenedUri, error)
 	}
+	UserRepository interface {
+		Create(u models.User) (*models.User, error)
+	}
 }

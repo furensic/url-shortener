@@ -74,22 +74,26 @@ func main() {
 	}
 	logger.Debug("Database connection established to " + db.Config().Host)
 
-	logger.Debug("Creating new ShortenedUri Repository with postgres adapter")
+	logger.Debug("Creating new repositories with postgres adapter")
 	shortenedUriRepo := repository.NewPostgresAdapter(db)
+	userRepo := repository.NewUserPostgresAdapter(db)
 
 	logger.Debug("Creating new Repository")
 	repositories := repository.Repo{
 		ShortenedUriRepository: shortenedUriRepo,
+		UserRepository:         userRepo,
 	}
 
 	logger.Debug("Creating new ShortenerService using repository")
 	shortenerService := service.NewShortenerService(repositories)
+	userService := service.NewUserService(repositories)
 	// i wonder how i could do it so that i wouldnt need to build seperate
 	// repositories for each service e.g. ShortenerService wouldn't need User service?
 
 	logger.Debug("Creating new handlers with ShortenerService")
 	handler := &handlers.Handler{
 		ShortenerService: shortenerService,
+		UserService:      userService,
 	}
 
 	logger.Debug("Updating app config")
