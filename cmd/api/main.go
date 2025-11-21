@@ -18,12 +18,13 @@ import (
 
 type application struct {
 	config  config
-	service *service.ShortenerService
+	service Services
 	logger  slog.Logger
 }
 
 type Services struct {
 	ShortenedUri service.ShortenerService
+	UserService  service.UserService
 }
 
 func (app *application) NewPostgresDatabase(s string) (*pgx.Conn, error) {
@@ -99,7 +100,10 @@ func main() {
 	logger.Debug("Updating app config")
 	app.config = app_config
 	logger.Debug("Updating app services")
-	app.service = shortenerService
+	app.service = Services{
+		ShortenedUri: *shortenerService,
+		UserService:  *userService,
+	}
 
 	logger.Info("Launching HTTP server on :" + strconv.Itoa(app_config.port))
 	if err := app.serveHTTP(handler); err != nil {

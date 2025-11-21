@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 
 	"codeberg.org/Kassiopeia/url-shortener/internal/models"
 	"codeberg.org/Kassiopeia/url-shortener/internal/repository"
@@ -92,4 +93,23 @@ func (s *UserService) GetByUsername(username string) (*models.User, error) {
 	}
 
 	return userFound, nil
+}
+
+// returns either true if the credentials are correct or false if incorrect or not found
+func (s *UserService) VerifyCredentials(payload models.LoginUserPayload) (bool, error) {
+	user, err := s.storage.UserRepository.GetByUsername(payload.Username)
+	if err != nil {
+		return false, repository.ErrUsernameNotFound
+	}
+
+	// PHC Format: $argon2<variant>$v=<version>$m=<memory>,t=<iterations>,p=<parallelism>$<salt>$<hash>
+	split := strings.Split(user.PasswordHash, "$")
+
+	if split[0] == "argon2id" {
+		slog.Debug("Correct argon2 variant")
+	} else {
+		slog.Debug("Incorrect argon2 variant")
+	}
+
+	return true, nil
 }

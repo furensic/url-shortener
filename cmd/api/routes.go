@@ -1,10 +1,41 @@
 package main
 
 import (
+	"log/slog"
 	"net/http"
 
 	"codeberg.org/Kassiopeia/url-shortener/cmd/api/handlers"
+	"codeberg.org/Kassiopeia/url-shortener/internal/models"
 )
+
+func (app *application) basicAuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		username, password, ok := r.BasicAuth()
+		if !ok {
+			slog.Info("No authorization header set")
+			http.Error(w, "No authorization header", http.StatusUnauthorized)
+			return
+		}
+
+		loginPayload := models.LoginUserPayload{
+			Username: username,
+			Password: password,
+		}
+
+		ok, err := app.service.UserService.VerifyCredentials(loginPayload)
+		if err != nil {
+			slog.Error(err.Error())
+		}
+
+		if ok {
+			next.ServeHTTP(w, r)
+		} else {
+			http.Error(w, "Not authorized", http.StatusUnauthorized)
+			return
+		}
+
+	})
+}
 
 func (app *application) mountRoutes(h *handlers.Handler) http.Handler {
 	app.logger.Debug("Creating public new mux")

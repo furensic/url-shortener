@@ -18,3 +18,8 @@ type RegisterUserPayload struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
+
+type LoginUserPayload struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
