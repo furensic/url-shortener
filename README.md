@@ -9,4 +9,6 @@ A simple server application that offers HTTP redirection via an REST API.
 
 ## whats next?
 
-i need to check if a user with username already exists. Otherwise the DB returns an error `ERROR: duplicate key value violates unique constraint "users_username_key" (SQLSTATE 23505)` but the index (id) increases anyways. I suppose i could check if the username exists inside 'service/user.go'?
+i need to check if a user with username already exists. Otherwise the DB returns an error `ERROR: duplicate key value violates unique constraint "users_username_key" (SQLSTATE 23505)` but the index (id) increases anyways. I suppose i could check if the username exists inside 'service/user.go'? done
+
+i need to create a login endpoint that is able to check user data and then maybe use a middleware or something to inject a token, cookie or something?
