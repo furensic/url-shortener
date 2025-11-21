@@ -12,5 +12,6 @@ type Repo struct {
 	UserRepository interface {
 		Create(u models.User) (*models.User, error)
 		GetByUsername(username string) (*models.User, error)
+		Verify(p models.LoginUserPayload) (*models.User, error)
 	}
 }

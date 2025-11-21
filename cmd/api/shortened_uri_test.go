@@ -1,9 +1,8 @@
-package handlers_test
+package main_test
 
 import (
 	"testing"
 
-	"codeberg.org/Kassiopeia/url-shortener/cmd/api/handlers"
 	"codeberg.org/Kassiopeia/url-shortener/internal/repository"
 	"codeberg.org/Kassiopeia/url-shortener/internal/service"
 	// "codeberg.org/Kassiopeia/url-shortener/internal/repository"
@@ -19,10 +18,6 @@ func TestHealthHandler(t *testing.T) {
 		ShortenedUriRepository: shortenedUriRepo,
 	}
 
-	shortenerService := service.NewShortenerService(repositories)
-
-	_ = &handlers.Handler{
-		ShortenerService: shortenerService,
-	}
+	_ = service.NewShortenerService(repositories)
 
 }

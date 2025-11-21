@@ -1,11 +1,13 @@
 package service
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"strings"
 
 	"codeberg.org/Kassiopeia/url-shortener/internal/models"
@@ -97,7 +99,7 @@ func (s *UserService) GetByUsername(username string) (*models.User, error) {
 
 // returns either true if the credentials are correct or false if incorrect or not found
 func (s *UserService) VerifyCredentials(payload models.LoginUserPayload) (bool, error) {
-	user, err := s.storage.UserRepository.GetByUsername(payload.Username)
+	user, err := s.storage.UserRepository.Verify(payload)
 	if err != nil {
 		return false, repository.ErrUsernameNotFound
 	}
@@ -105,10 +107,74 @@ func (s *UserService) VerifyCredentials(payload models.LoginUserPayload) (bool, 
 	// PHC Format: $argon2<variant>$v=<version>$m=<memory>,t=<iterations>,p=<parallelism>$<salt>$<hash>
 	split := strings.Split(user.PasswordHash, "$")
 
-	if split[0] == "argon2id" {
-		slog.Debug("Correct argon2 variant")
+	slog.Info(fmt.Sprintf("%+v", user))
+	slog.Info(split[1])
+	if split[1] == "argon2id" {
+		slog.Info("Correct argon2 variant")
 	} else {
-		slog.Debug("Incorrect argon2 variant")
+		return false, errors.New("Invalid argon2 variant")
+	}
+
+	argonConfig := struct {
+		variant    string
+		version    int
+		memory     int
+		iterations int
+		threads    int
+		salt       string
+		hash       string
+	}{
+		variant: split[1],
+	}
+
+	for i, str := range split {
+		slog.Info(fmt.Sprintf("i: %d, str: %v", i, str))
+	}
+
+	ver, ok := strings.CutPrefix(split[2], "v=")
+	if !ok {
+		slog.Info("Wrong version")
+		return false, err
+	}
+	params := strings.Split(split[3], ",")
+	slog.Info(fmt.Sprintf("params: %v", params))
+	mem, ok := strings.CutPrefix(params[0], "m=")
+	slog.Info(fmt.Sprintf("mem: %v", mem))
+	if !ok {
+		slog.Info("Wrong memory")
+		return false, err
+	}
+	iter, ok := strings.CutPrefix(params[1], "t=")
+	slog.Info(fmt.Sprintf("iter: %v", iter))
+	if !ok {
+		slog.Info("Wrong iterations")
+		return false, err
+	}
+	thr, ok := strings.CutPrefix(params[2], "p=")
+	slog.Info(fmt.Sprintf("thr: %v", thr))
+	if !ok {
+		slog.Info("Wrong thread")
+		return false, err
+	}
+
+	argonConfig.version, err = strconv.Atoi(ver)
+	argonConfig.memory, err = strconv.Atoi(mem)
+	argonConfig.iterations, err = strconv.Atoi(iter)
+	argonConfig.threads, err = strconv.Atoi(thr)
+	argonConfig.salt = split[4]
+	argonConfig.hash = split[5]
+
+	slog.Info(fmt.Sprintf("salt: %s", argonConfig.salt))
+	slog.Info(fmt.Sprintf("hash: %s", argonConfig.hash))
+	inputPassword := argon2.IDKey([]byte(payload.Password), []byte(argonConfig.salt), uint32(argonConfig.iterations), uint32(argonConfig.memory), uint8(argonConfig.threads), 32)
+
+	slog.Info(fmt.Sprintf("inputPassword: %s\ndbPassword: %s", base64.RawStdEncoding.EncodeToString(inputPassword), argonConfig.hash))
+	if err != nil {
+		slog.Info(err.Error())
+	}
+	if !bytes.Equal(inputPassword, []byte(argonConfig.hash)) {
+		slog.Info("invalid password")
+		return false, errors.New("Invalid password")
 	}
 
 	return true, nil

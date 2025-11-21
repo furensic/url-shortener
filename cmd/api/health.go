@@ -1,4 +1,4 @@
-package handlers
+package main
 
 import (
 	"encoding/json"
@@ -8,23 +8,17 @@ import (
 
 	"codeberg.org/Kassiopeia/url-shortener/internal/models"
 	"codeberg.org/Kassiopeia/url-shortener/internal/repository"
-	"codeberg.org/Kassiopeia/url-shortener/internal/service"
 )
 
 type CreateShortenedUriRequest struct {
 	OriginUri string `json:"origin_uri"`
 }
 
-type Handler struct {
-	ShortenerService *service.ShortenerService
-	UserService      *service.UserService
-}
-
-func (h *Handler) GetHealthHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) GetHealthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Application running!\n"))
 }
 
-func (h *Handler) CreateShortenedUri(w http.ResponseWriter, r *http.Request) {
+func (app *application) CreateShortenedUri(w http.ResponseWriter, r *http.Request) {
 	shortenedUri := models.ShortenedUri{}
 
 	decoder := json.NewDecoder(r.Body)
@@ -35,7 +29,7 @@ func (h *Handler) CreateShortenedUri(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmp, err := h.ShortenerService.Create(shortenedUri)
+	tmp, err := app.service.ShortenerService.Create(shortenedUri) // app.service.ShortenerService undefined (type Services has no field or method ShortenerService)go-staticcheck
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -46,7 +40,7 @@ func (h *Handler) CreateShortenedUri(w http.ResponseWriter, r *http.Request) {
 	enc.Encode(tmp)
 }
 
-func (h *Handler) GetShortenedUriById(w http.ResponseWriter, r *http.Request) {
+func (app *application) GetShortenedUriById(w http.ResponseWriter, r *http.Request) {
 	param_id := r.PathValue("id")
 	id, err := strconv.Atoi(param_id)
 	if err != nil {
@@ -56,7 +50,7 @@ func (h *Handler) GetShortenedUriById(w http.ResponseWriter, r *http.Request) {
 
 	log.Print("before h.ShortenerService.GetById(id)")
 
-	shortenedUri, err := h.ShortenerService.GetById(id)
+	shortenedUri, err := app.service.ShortenerService.GetById(id) // app.service.ShortenerService undefined (type Services has no field or method ShortenerService) (compile)go-staticcheck
 	if err != nil {
 		if err == repository.ErrShortenedUriNotFound {
 			log.Print("ErrNoRows GetById")
@@ -71,7 +65,7 @@ func (h *Handler) GetShortenedUriById(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, shortenedUri.OriginUri, http.StatusPermanentRedirect)
 }
 
-func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
+func (app *application) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	newRequest := models.RegisterUserPayload{}
 
 	decoder := json.NewDecoder(r.Body)
@@ -82,7 +76,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.UserService.Create(newRequest)
+	user, err := app.service.UserService.Create(newRequest)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -93,14 +87,14 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	enc.Encode(user)
 }
 
-func (h *Handler) GetUserByName(w http.ResponseWriter, r *http.Request) {
+func (app *application) GetUserByName(w http.ResponseWriter, r *http.Request) {
 	username := r.PathValue("username")
 	if username == "" {
 		http.Error(w, "no username found in path arguments", http.StatusBadRequest)
 		return
 	}
 
-	user, err := h.UserService.GetByUsername(username)
+	user, err := app.service.UserService.GetByUsername(username)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

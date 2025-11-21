@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"time"
 
-	"codeberg.org/Kassiopeia/url-shortener/cmd/api/handlers"
 	"codeberg.org/Kassiopeia/url-shortener/internal/repository"
 	"codeberg.org/Kassiopeia/url-shortener/internal/service"
 	"github.com/jackc/pgx/v5"
@@ -23,8 +22,8 @@ type application struct {
 }
 
 type Services struct {
-	ShortenedUri service.ShortenerService
-	UserService  service.UserService
+	ShortenerService service.ShortenerService
+	UserService      service.UserService
 }
 
 func (app *application) NewPostgresDatabase(s string) (*pgx.Conn, error) {
@@ -92,21 +91,17 @@ func main() {
 	// repositories for each service e.g. ShortenerService wouldn't need User service?
 
 	logger.Debug("Creating new handlers with ShortenerService")
-	handler := &handlers.Handler{
-		ShortenerService: shortenerService,
-		UserService:      userService,
-	}
 
 	logger.Debug("Updating app config")
 	app.config = app_config
 	logger.Debug("Updating app services")
 	app.service = Services{
-		ShortenedUri: *shortenerService,
-		UserService:  *userService,
+		ShortenerService: *shortenerService,
+		UserService:      *userService,
 	}
 
 	logger.Info("Launching HTTP server on :" + strconv.Itoa(app_config.port))
-	if err := app.serveHTTP(handler); err != nil {
+	if err := app.serveHTTP(); err != nil {
 		logger.Error("Error listening and serving: " + err.Error())
 	}
 }

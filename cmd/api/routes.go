@@ -4,13 +4,14 @@ import (
 	"log/slog"
 	"net/http"
 
-	"codeberg.org/Kassiopeia/url-shortener/cmd/api/handlers"
 	"codeberg.org/Kassiopeia/url-shortener/internal/models"
 )
 
 func (app *application) basicAuthMiddleware(next http.Handler) http.Handler {
+	app.logger.Debug("basic auth middleware")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		username, password, ok := r.BasicAuth()
+		app.logger.Debug("basic auth middleware")
 		if !ok {
 			slog.Info("No authorization header set")
 			http.Error(w, "No authorization header", http.StatusUnauthorized)
@@ -37,21 +38,20 @@ func (app *application) basicAuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) mountRoutes(h *handlers.Handler) http.Handler {
+func (app *application) mountRoutes() http.Handler {
 	app.logger.Debug("Creating public new mux")
 	publicMux := http.NewServeMux()
-
 	// health
 	app.logger.Debug("Mounting GET /health")
-	publicMux.HandleFunc("GET /health", h.GetHealthHandler) // ?
+	publicMux.Handle("GET /health", app.basicAuthMiddleware(http.HandlerFunc(app.GetHealthHandler))) // ?
 
 	// shortened_uri
 	app.logger.Debug("Mounting POST /")
-	publicMux.HandleFunc("POST /", h.CreateShortenedUri) // ?
+	publicMux.HandleFunc("POST /", app.CreateShortenedUri) // ?
 	app.logger.Debug("Mounting GET /{id}")
-	publicMux.HandleFunc("GET /{id}", h.GetShortenedUriById) // ?
+	publicMux.HandleFunc("GET /{id}", app.GetShortenedUriById) // ?
 
-	publicMux.HandleFunc("POST /auth/register", h.RegisterUser)
+	publicMux.HandleFunc("POST /auth/register", app.RegisterUser)
 
 	// root router
 	app.logger.Debug("Creating root mux")

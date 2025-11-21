@@ -5,8 +5,6 @@ import (
 	"log"
 	"net/http"
 	"time"
-
-	"codeberg.org/Kassiopeia/url-shortener/cmd/api/handlers"
 )
 
 type config struct {
@@ -35,9 +33,9 @@ func logMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) serveHTTP(h *handlers.Handler) error {
+func (app *application) serveHTTP() error {
 	app.logger.Debug("Mounting routes from handler")
-	router := app.mountRoutes(h)
+	router := app.mountRoutes()
 
 	server := http.Server{
 		Addr:              fmt.Sprintf(":%d", app.config.port),

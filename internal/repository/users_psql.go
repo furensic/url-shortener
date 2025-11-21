@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -41,9 +42,32 @@ func (a *UserPostgresAdapter) GetByUsername(username string) (*models.User, erro
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := "SELECT (id, username) FROM users WHERE username=$1"
+	slog.Info(username)
 
-	err := a.db.QueryRow(ctx, query, &username).Scan(&userFound.Id, &userFound.Username)
+	query := "SELECT id, username FROM users WHERE username=$1"
+
+	err := a.db.QueryRow(ctx, query, username).Scan(&userFound.Id, &userFound.Username)
+	if err != nil {
+		slog.Error(err.Error())
+		if err == pgx.ErrNoRows {
+			return nil, ErrUsernameNotFound
+		}
+		return nil, err
+	}
+
+	return &userFound, nil
+}
+
+func (a *UserPostgresAdapter) Verify(p models.LoginUserPayload) (*models.User, error) {
+	userFound := models.User{}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	slog.Info(fmt.Sprintf("Username: %s, Password: %s", p.Username, p.Username))
+
+	query := "SELECT id, username, password_hash FROM users WHERE username=$1"
+
+	err := a.db.QueryRow(ctx, query, p.Username).Scan(&userFound.Id, &userFound.Username, &userFound.PasswordHash)
 	if err != nil {
 		slog.Error(err.Error())
 		if err == pgx.ErrNoRows {
