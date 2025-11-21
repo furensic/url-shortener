@@ -11,5 +11,6 @@ type Repo struct {
 	}
 	UserRepository interface {
 		Create(u models.User) (*models.User, error)
+		GetByUsername(username string) (*models.User, error)
 	}
 }

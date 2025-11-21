@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"log/slog"
 	"time"
 
 	"codeberg.org/Kassiopeia/url-shortener/internal/models"
@@ -30,4 +32,25 @@ func (a *UserPostgresAdapter) Create(u models.User) (*models.User, error) {
 	}
 
 	return &newUser, nil
+}
+
+var ErrUsernameNotFound = errors.New("Username not found")
+
+func (a *UserPostgresAdapter) GetByUsername(username string) (*models.User, error) {
+	userFound := models.User{}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := "SELECT (id, username) FROM users WHERE username=$1"
+
+	err := a.db.QueryRow(ctx, query, &username).Scan(&userFound.Id, &userFound.Username)
+	if err != nil {
+		slog.Error(err.Error())
+		if err == pgx.ErrNoRows {
+			return nil, ErrUsernameNotFound
+		}
+		return nil, err
+	}
+
+	return &userFound, nil
 }

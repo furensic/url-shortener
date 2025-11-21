@@ -92,3 +92,21 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	enc.Encode(user)
 }
+
+func (h *Handler) GetUserByName(w http.ResponseWriter, r *http.Request) {
+	username := r.PathValue("username")
+	if username == "" {
+		http.Error(w, "no username found in path arguments", http.StatusBadRequest)
+		return
+	}
+
+	user, err := h.UserService.GetByUsername(username)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("content-type", "application/json")
+	enc := json.NewEncoder(w)
+	enc.Encode(user)
+}

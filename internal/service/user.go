@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"codeberg.org/Kassiopeia/url-shortener/internal/models"
 	"codeberg.org/Kassiopeia/url-shortener/internal/repository"
@@ -38,6 +39,16 @@ func (s *UserService) Create(u models.RegisterUserPayload) (*models.User, error)
 	if len(u.Password) < 8 {
 		return nil, ErrPasswordTooShort
 	}
+	if len(u.Username) >= 32 {
+		return nil, errors.New("Username too long")
+	}
+
+	_, err := s.GetByUsername(u.Username)
+	if err != repository.ErrUsernameNotFound { // maybe create a error for the service?
+		return nil, errors.New("User already exists")
+	}
+
+	slog.Info("Test")
 
 	newUser := &models.User{}
 	newUser.Username = u.Username
@@ -50,7 +61,7 @@ func (s *UserService) Create(u models.RegisterUserPayload) (*models.User, error)
 	}
 
 	argonConfig.Salt = make([]byte, 16)
-	_, err := rand.Read(argonConfig.Salt)
+	_, err = rand.Read(argonConfig.Salt)
 	if err != nil {
 		return nil, fmt.Errorf("salt generation failed: %w", err)
 	}
@@ -61,5 +72,24 @@ func (s *UserService) Create(u models.RegisterUserPayload) (*models.User, error)
 	encodedHash := fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, argonConfig.MemoryCost, argonConfig.TimeCost, argonConfig.Threads, base64.RawStdEncoding.EncodeToString(argonConfig.Salt), base64.RawStdEncoding.EncodeToString(argonConfig.HashRaw))
 	newUser.PasswordHash = encodedHash
 
+	slog.Info(fmt.Sprintf("%s", encodedHash))
+
 	return s.storage.UserRepository.Create(*newUser)
+}
+
+func (s *UserService) GetByUsername(username string) (*models.User, error) {
+	if len(username) >= 32 {
+		return nil, errors.New("Username too long")
+	}
+	userFound := &models.User{}
+
+	userFound, err := s.storage.UserRepository.GetByUsername(username)
+	if err != nil {
+		if err == repository.ErrUsernameNotFound {
+			return nil, repository.ErrUsernameNotFound
+		}
+		return nil, err
+	}
+
+	return userFound, nil
 }
