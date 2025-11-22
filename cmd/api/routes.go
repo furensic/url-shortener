@@ -49,9 +49,13 @@ func (app *application) mountRoutes() http.Handler {
 	app.logger.Debug("Mounting POST /")
 	publicMux.HandleFunc("POST /", app.CreateShortenedUri) // ?
 	app.logger.Debug("Mounting GET /{id}")
-	publicMux.HandleFunc("GET /{id}", app.GetShortenedUriById) // ?
+	publicMux.HandleFunc("GET /{id}", app.GetShortUriById)
+	publicMux.HandleFunc("GET /redirect/{id}", app.GetShortUriByIdRedirect) // ?
 
 	publicMux.HandleFunc("POST /auth/register", app.RegisterUser)
+	publicMux.HandleFunc("POST /auth/login", app.LoginUser)
+
+	publicMux.HandleFunc("GET /user/{username}", app.GetUserByName)
 
 	// root router
 	app.logger.Debug("Creating root mux")
