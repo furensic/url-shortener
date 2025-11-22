@@ -28,13 +28,13 @@ func (a *ShortenedUriPostgresAdapter) GetById(id int) (*models.ShortenedUri, err
 
 	query := "SELECT id, origin_uri FROM shortened_uri WHERE id=$1"
 	a.dbLock.Lock()
+	defer a.dbLock.Unlock()
 	if err := a.db.QueryRow(ctx, query, id).Scan(&uri.Id, &uri.OriginUri); err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, ErrShortenedUriNotFound
 		}
 		return nil, err
 	}
-	a.dbLock.Unlock()
 	return &uri, nil
 }
 
@@ -46,10 +46,10 @@ func (a *ShortenedUriPostgresAdapter) Create(u models.ShortenedUri) (*models.Sho
 
 	query := "INSERT INTO shortened_uri (origin_uri, timestamp) VALUES ($1, $2) returning id, origin_uri"
 	a.dbLock.Lock()
+	defer a.dbLock.Unlock()
 	if err := a.db.QueryRow(ctx, query, &u.OriginUri, u.Timestamp.Unix()).Scan(&uri.Id, &uri.OriginUri); err != nil {
 		return nil, err
 	}
-	a.dbLock.Unlock()
 
 	return &uri, nil
 }

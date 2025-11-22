@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"sync"
 	"time"
 
 	"codeberg.org/Kassiopeia/url-shortener/internal/models"
@@ -13,6 +14,7 @@ import (
 type UserPostgresAdapter struct {
 	db     *pgx.Conn
 	config RepositoryConfiguration
+	dbLock sync.Mutex
 }
 
 func NewUserPgxAdapter(db *pgx.Conn, cfg RepositoryConfiguration) *UserPostgresAdapter {
@@ -27,7 +29,8 @@ func (a *UserPostgresAdapter) Create(u models.User) (*models.User, error) {
 	defer cancel()
 
 	query := "INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username"
-
+	a.dbLock.Lock()
+	defer a.dbLock.Unlock()
 	if err := a.db.QueryRow(ctx, query, &u.Username, &u.PasswordHash).Scan(&newUser.Id, &newUser.Username); err != nil {
 		return nil, err
 	}
@@ -45,7 +48,8 @@ func (a *UserPostgresAdapter) GetByUsername(username string) (*models.User, erro
 	slog.Info(username)
 
 	query := "SELECT id, username FROM users WHERE username=$1"
-
+	a.dbLock.Lock()
+	defer a.dbLock.Unlock()
 	err := a.db.QueryRow(ctx, query, username).Scan(&userFound.Id, &userFound.Username)
 	if err != nil {
 		slog.Error(err.Error())
@@ -65,6 +69,8 @@ func (a *UserPostgresAdapter) Verify(p models.LoginUserPayload) (*models.User, e
 
 	query := "SELECT id, username, password_hash FROM users WHERE username=$1"
 
+	a.dbLock.Lock()
+	defer a.dbLock.Unlock()
 	err := a.db.QueryRow(ctx, query, p.Username).Scan(&userFound.Id, &userFound.Username, &userFound.PasswordHash)
 	if err != nil {
 		slog.Error(err.Error())
