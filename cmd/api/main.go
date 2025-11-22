@@ -43,12 +43,17 @@ func (app *application) NewPostgresDatabase(s string) (*pgx.Conn, error) {
 	return conn, nil
 }
 
-func main() {
-	logger_lvl := new(slog.LevelVar)
-	logger_lvl.Set(slog.LevelDebug)
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: logger_lvl,
+func CreateLogger(logLevel slog.Level) *slog.Logger {
+	l := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource: true,
+		Level:     logLevel,
 	}))
+	slog.SetDefault(l)
+	return l
+}
+
+func main() {
+	logger := CreateLogger(slog.LevelDebug)
 
 	logger.Info("Starting url shortener service")
 
@@ -74,19 +79,16 @@ func main() {
 	}
 	logger.Debug("Database connection established to " + db.Config().Host)
 
-	logger.Debug("Creating new repositories with postgres adapter")
-	shortenedUriRepo := repository.NewPostgresAdapter(db)
-	userRepo := repository.NewUserPostgresAdapter(db)
-
 	logger.Debug("Creating new Repository")
-	repositories := repository.Repo{
-		ShortenedUriRepository: shortenedUriRepo,
-		UserRepository:         userRepo,
-	}
+	repositories := repository.NewRootRepository(repository.RepositoryConfiguration{
+		Logger: logger.With("test", "service"),
+	})
+	repositories.ShortenedUriRepository = repository.NewShortenedUriPgxAdapter(db)
+	repositories.UserRepository = repository.NewUserPgxAdapter(db)
 
 	logger.Debug("Creating new ShortenerService using repository")
-	shortenerService := service.NewShortenerService(repositories)
-	userService := service.NewUserService(repositories)
+	shortenerService := service.NewShortenerService(*repositories)
+	userService := service.NewUserService(*repositories)
 	// i wonder how i could do it so that i wouldnt need to build seperate
 	// repositories for each service e.g. ShortenerService wouldn't need User service?
 

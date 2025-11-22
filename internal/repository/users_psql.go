@@ -14,7 +14,7 @@ type UserPostgresAdapter struct {
 	db *pgx.Conn
 }
 
-func NewUserPostgresAdapter(db *pgx.Conn) *UserPostgresAdapter {
+func NewUserPgxAdapter(db *pgx.Conn) *UserPostgresAdapter {
 	return &UserPostgresAdapter{
 		db: db,
 	}

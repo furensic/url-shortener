@@ -52,10 +52,14 @@ func (app *application) mountRoutes() http.Handler {
 	publicMux.HandleFunc("GET /{id}", app.GetShortUriById)
 	publicMux.HandleFunc("GET /redirect/{id}", app.GetShortUriByIdRedirect) // ?
 
+	// Auth
 	publicMux.HandleFunc("POST /auth/register", app.RegisterUser)
 	publicMux.HandleFunc("POST /auth/login", app.LoginUser)
+	publicMux.HandleFunc("PUT /auth/password", app.UpdatePassword)
 
+	// Users
 	publicMux.HandleFunc("GET /user/{username}", app.GetUserByName)
+	publicMux.HandleFunc("PUT /user/{id}", app.UpdateUserExtension)
 
 	// root router
 	app.logger.Debug("Creating root mux")

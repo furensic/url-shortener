@@ -12,7 +12,7 @@ type ShortenedUriPostgresAdapter struct {
 	db *pgx.Conn
 }
 
-func NewPostgresAdapter(db *pgx.Conn) *ShortenedUriPostgresAdapter {
+func NewShortenedUriPgxAdapter(db *pgx.Conn) *ShortenedUriPostgresAdapter {
 	return &ShortenedUriPostgresAdapter{db: db}
 }
 

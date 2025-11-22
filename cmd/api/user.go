@@ -22,3 +22,7 @@ func (app *application) GetUserByName(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	enc.Encode(user)
 }
+
+func (app *application) UpdateUserExtension(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "Unimplemented", http.StatusNotImplemented)
+}

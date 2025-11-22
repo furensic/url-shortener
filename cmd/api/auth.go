@@ -50,3 +50,7 @@ func (app *application) LoginUser(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	enc.Encode(user)
 }
+
+func (app *application) UpdatePassword(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "Unimplemented endpoint", http.StatusNotImplemented)
+}
