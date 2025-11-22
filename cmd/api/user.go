@@ -24,5 +24,5 @@ func (app *application) GetUserByName(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) UpdateUserExtension(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "Unimplemented", http.StatusNotImplemented)
+	http.Error(w, "Unimplemented endpoint", http.StatusNotImplemented)
 }

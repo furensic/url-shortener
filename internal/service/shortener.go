@@ -1,7 +1,6 @@
 package service
 
 import (
-	"log"
 	"time"
 
 	"codeberg.org/Kassiopeia/url-shortener/internal/models"
@@ -24,7 +23,5 @@ func (s *ShortenerService) Create(u models.ShortenedUri) (*models.ShortenedUri, 
 }
 
 func (s *ShortenerService) GetById(id int) (*models.ShortenedUri, error) {
-	log.Print("before s.GetById(id)")
-
 	return s.storage.ShortenedUriRepository.GetById(id)
 }

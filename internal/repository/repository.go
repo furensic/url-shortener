@@ -11,7 +11,6 @@ type RepositoryConfiguration struct {
 }
 
 type Repo struct {
-	config                 RepositoryConfiguration
 	ShortenedUriRepository interface {
 		Create(s models.ShortenedUri) (*models.ShortenedUri, error)
 		GetById(id int) (*models.ShortenedUri, error)
@@ -23,8 +22,6 @@ type Repo struct {
 	}
 }
 
-func NewRootRepository(cfg RepositoryConfiguration) *Repo {
-	return &Repo{
-		config: cfg,
-	}
+func NewRootRepository() *Repo {
+	return &Repo{}
 }

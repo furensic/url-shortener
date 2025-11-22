@@ -11,10 +11,11 @@ import (
 )
 
 type UserPostgresAdapter struct {
-	db *pgx.Conn
+	db     *pgx.Conn
+	config RepositoryConfiguration
 }
 
-func NewUserPgxAdapter(db *pgx.Conn) *UserPostgresAdapter {
+func NewUserPgxAdapter(db *pgx.Conn, cfg RepositoryConfiguration) *UserPostgresAdapter {
 	return &UserPostgresAdapter{
 		db: db,
 	}

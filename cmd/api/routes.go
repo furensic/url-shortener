@@ -3,15 +3,14 @@ package main
 import (
 	"log/slog"
 	"net/http"
+	"time"
 
 	"codeberg.org/Kassiopeia/url-shortener/internal/models"
 )
 
 func (app *application) basicAuthMiddleware(next http.Handler) http.Handler {
-	app.logger.Debug("basic auth middleware")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		username, password, ok := r.BasicAuth()
-		app.logger.Debug("basic auth middleware")
 		if !ok {
 			slog.Info("No authorization header set")
 			http.Error(w, "No authorization header", http.StatusUnauthorized)
@@ -38,17 +37,27 @@ func (app *application) basicAuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+type Middleware func(next http.Handler) http.Handler
+
+func (app *application) logMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		startTime := time.Now()
+
+		next.ServeHTTP(w, r)
+
+		elapsedTime := time.Since(startTime)
+		app.logger.WithGroup("Request").Info("Logging request", slog.String("method", r.Method), slog.String("path", r.URL.Path), slog.Duration("request time", elapsedTime))
+		// not sure how to replace this standard logger with my application logger?
+	})
+}
+
 func (app *application) mountRoutes() http.Handler {
-	app.logger.Debug("Creating public new mux")
 	publicMux := http.NewServeMux()
 	// health
-	app.logger.Debug("Mounting GET /health")
 	publicMux.Handle("GET /health", app.basicAuthMiddleware(http.HandlerFunc(app.GetHealthHandler))) // ?
 
 	// shortened_uri
-	app.logger.Debug("Mounting POST /")
 	publicMux.HandleFunc("POST /", app.CreateShortenedUri) // ?
-	app.logger.Debug("Mounting GET /{id}")
 	publicMux.HandleFunc("GET /{id}", app.GetShortUriById)
 	publicMux.HandleFunc("GET /redirect/{id}", app.GetShortUriByIdRedirect) // ?
 
@@ -62,11 +71,9 @@ func (app *application) mountRoutes() http.Handler {
 	publicMux.HandleFunc("PUT /user/{id}", app.UpdateUserExtension)
 
 	// root router
-	app.logger.Debug("Creating root mux")
 	rootMux := http.NewServeMux()
 
-	app.logger.Debug("Add /v1/ handle to root mux")
-	rootMux.Handle("/v1/", http.StripPrefix("/v1", logMiddleware(publicMux)))
+	rootMux.Handle("/v1/", http.StripPrefix("/v1", app.logMiddleware(publicMux)))
 
 	return rootMux
 }

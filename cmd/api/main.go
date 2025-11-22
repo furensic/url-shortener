@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -44,7 +43,7 @@ func (app *application) NewPostgresDatabase(s string) (*pgx.Conn, error) {
 }
 
 func CreateLogger(logLevel slog.Level) *slog.Logger {
-	l := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+	l := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: true,
 		Level:     logLevel,
 	}))
@@ -55,14 +54,10 @@ func CreateLogger(logLevel slog.Level) *slog.Logger {
 func main() {
 	logger := CreateLogger(slog.LevelDebug)
 
-	logger.Info("Starting url shortener service")
-
-	logger.Debug("Initializing new application struct")
 	app := &application{
 		logger: *logger,
 	}
 
-	logger.Debug("Creating new app config")
 	app_config := config{
 		port:              8090,
 		writeTimeout:      3 * time.Second,
@@ -70,33 +65,22 @@ func main() {
 		readHeaderTimeout: 5 * time.Second,
 		idleTimeout:       time.Minute,
 	}
-	logger.Debug("New app config: " + fmt.Sprintf("%+v", app_config))
 
-	logger.Debug("Connecting to database")
 	db, err := app.NewPostgresDatabase("postgres://svc:password@localhost:5432/url_shortener")
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	logger.Debug("Database connection established to " + db.Config().Host)
 
-	logger.Debug("Creating new Repository")
-	repositories := repository.NewRootRepository(repository.RepositoryConfiguration{
-		Logger: logger.With("test", "service"),
-	})
-	repositories.ShortenedUriRepository = repository.NewShortenedUriPgxAdapter(db)
-	repositories.UserRepository = repository.NewUserPgxAdapter(db)
+	repositories := repository.NewRootRepository()
+	repositories.ShortenedUriRepository = repository.NewShortenedUriPgxAdapter(db, repository.RepositoryConfiguration{Logger: logger.WithGroup("ShortenedUriRepository")})
+	repositories.UserRepository = repository.NewUserPgxAdapter(db, repository.RepositoryConfiguration{Logger: logger.WithGroup("UserRepository")})
 
-	logger.Debug("Creating new ShortenerService using repository")
 	shortenerService := service.NewShortenerService(*repositories)
 	userService := service.NewUserService(*repositories)
 	// i wonder how i could do it so that i wouldnt need to build seperate
 	// repositories for each service e.g. ShortenerService wouldn't need User service?
 
-	logger.Debug("Creating new handlers with ShortenerService")
-
-	logger.Debug("Updating app config")
 	app.config = app_config
-	logger.Debug("Updating app services")
 	app.service = Services{
 		ShortenerService: *shortenerService,
 		UserService:      *userService,

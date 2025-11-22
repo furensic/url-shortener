@@ -44,8 +44,6 @@ func (app *application) GetShortUriByIdRedirect(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	log.Print("before h.ShortenerService.GetById(id)")
-
 	shortenedUri, err := app.service.ShortenerService.GetById(id) // app.service.ShortenerService undefined (type Services has no field or method ShortenerService) (compile)go-staticcheck
 	if err != nil {
 		if err == repository.ErrShortenedUriNotFound {
@@ -68,8 +66,6 @@ func (app *application) GetShortUriById(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	log.Print("before h.ShortenerService.GetById(id)")
 
 	shortenedUri, err := app.service.ShortenerService.GetById(id) // app.service.ShortenerService undefined (type Services has no field or method ShortenerService) (compile)go-staticcheck
 	if err != nil {
