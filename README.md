@@ -73,7 +73,6 @@ Percentage of the requests served within a certain time (ms)
  100%    226 (longest request)
 ```
 
-
 ```mermaid
 flowchart LR
     logger[Initialize logger]
@@ -89,5 +88,114 @@ flowchart LR
     repositories <--- shortenedUriRepo
     repositories <--- userRepo
 
+
+```
+
+## Request flow
+
+```mermaid
+flowchart LR
+    A[HTTP Handler/transport] --> B[Service Layer]
+    B --> C[Repository Layer]
+    C[Repository Layer] -- Takes repository config from Service --> D[Postgres Adapter]
+```
+
+```mermaid
+sequenceDiagram
+    Client-->>Transport handler: HTTP Request
+    Transport handler->>Service method: Call service method
+    Service method->>Repository: Query Data
+    Repository->>Service method: Return queried data or error
+    Service method->>Transport handler: Process response
+    Transport handler-->>Client: HTTP Reponse 200 or error
+```
+
+## http handlers
+
+```mermaid
+classDiagram
+    class models {
+        + ShortenedUri
+        + User
+        + RegisterUserPayload
+        + LoginUserPayload
+    }
+
+    class Application {
+        <<Transport>>
+        - config appConfig
+        - service Services
+        - logger slog.Logger
+        + GetHealthHandler()
+        + CreateShortenedUri()
+        + GetShortUriById()
+        + GetShortUriByIdRedirect()
+        + RegisterUser() --> UserService.Create(p models.RegisterUserPayload)
+        + LoginUser() --> UserService.VerifyCredentials(p models.LoginUserPayload)
+        + UpdatePassword()
+        + GetUserByName()
+        + UpdateUserExtension()
+        - basicAuthMiddleware()
+        - logMiddleware()
+    }
+
+    class Services {
+        + ShortenerService --> NewShortenerService(r Repo)
+    }
+
+    class UserService {
+        <<Service>>
+        + Create(u models.RegisterUserPayload)
+    }
+
+    class ShortenerService {
+        <<Service>>
+    }
+    Application --> UserService
+    Application --> ShortenerService
+
+    class Repository {
+        + ShortenedUriRepository
+        + UserRepository
+    }
+
+    class ShortenedUriRepository {
+        <<interface>>
+        + Create(s models.ShortenedUri) (*models.ShortenedUri, error)
+        + GetById(id int) (*models.ShortenedUri, error)
+    }
+
+    ShortenedUriRepository <|-- Repository
+
+    class ShortenedUriPostgresAdapter {
+        - db *pgx.Conn
+        - config RepositoryConfiguration
+        - dbLock sync.Mutex
+        + GetById(id int) (*models.ShortenedUri, error)
+        + Create
+    }
+    ShortenedUriPostgresAdapter <|-- ShortenedUriRepository
+
+    class UserRepository {
+        <<interface>>
+        + Create(u models.User) (*models.User, error)
+        + GetByUsername(username string) (*models.User, error)
+        + Verify(p models.LoginUserPayload) (*models.User, error)
+    }
+
+    UserRepository <|-- Repository
+
+    class UserPostgresAdapter {
+        + Create(u models.User) (*models.User, error)
+        + GetByUsername(username string) (*models.User, error)
+        + Verify(p models.LoginUserPayload) (*models.User, error)
+    }
+    UserPostgresAdapter <|-- UserRepository
+
+    UserService --> UserPostgresAdapter
+    
+    
+
+    ShortenerService --> ShortenedUriPostgresAdapter
 
 ```
