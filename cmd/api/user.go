@@ -5,6 +5,12 @@ import (
 	"net/http"
 )
 
+// GetUserByName godoc
+// @Summary Get User by Username
+// @Descriptions Tries to find a User by its username
+// @Tags Users
+// @Produce json
+// @Param username path string true "Username query"
 func (app *application) GetUserByName(w http.ResponseWriter, r *http.Request) {
 	username := r.PathValue("username")
 	if username == "" {

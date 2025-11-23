@@ -1,0 +1,17 @@
+basePath: /v1
+host: localhost:8090
+info:
+  contact:
+    name: Github Repository
+    url: https://github.com/furensic/url-shortener
+  description: Development implementation of url shortener
+  license:
+    name: MIT
+    url: https://github.com/furensic/url-shortener/blob/main/LICENSE
+  title: url-shortener API
+  version: 0.1-dev
+paths: {}
+schemes:
+- http
+- https
+swagger: "2.0"

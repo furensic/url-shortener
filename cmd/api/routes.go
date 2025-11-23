@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"time"
 
+	_ "codeberg.org/Kassiopeia/url-shortener/docs"
 	"codeberg.org/Kassiopeia/url-shortener/internal/models"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func (app *application) basicAuthMiddleware(next http.Handler) http.Handler {
@@ -70,6 +72,7 @@ func (app *application) mountRoutes() http.Handler {
 	publicMux.HandleFunc("GET /user/{username}", app.GetUserByName)
 	publicMux.HandleFunc("PUT /user/{id}", app.UpdateUserExtension)
 
+	publicMux.HandleFunc("GET /swagger/", httpSwagger.Handler(httpSwagger.URL("http://localhost:8090/v1/swagger/swagger.json")))
 	// root router
 	rootMux := http.NewServeMux()
 

@@ -1,0 +1,23 @@
+{
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "Development implementation of url shortener",
+        "title": "url-shortener API",
+        "contact": {
+            "name": "Github Repository",
+            "url": "https://github.com/furensic/url-shortener"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://github.com/furensic/url-shortener/blob/main/LICENSE"
+        },
+        "version": "0.1-dev"
+    },
+    "host": "localhost:8090",
+    "basePath": "/v1",
+    "paths": {}
+}

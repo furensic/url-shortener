@@ -51,6 +51,17 @@ func CreateLogger(logLevel slog.Level) *slog.Logger {
 	return l
 }
 
+// godoc main
+// @title url-shortener API
+// @version 0.1-dev
+// @description Development implementation of url shortener
+// @contact.name Github Repository
+// @contact.url https://github.com/furensic/url-shortener
+// @license.name MIT
+// @license.url https://github.com/furensic/url-shortener/blob/main/LICENSE
+// @host localhost:8090
+// @basePath /v1
+// @schemes http https
 func main() {
 	logger := CreateLogger(slog.LevelDebug)
 
